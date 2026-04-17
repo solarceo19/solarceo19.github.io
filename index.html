@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoWind — 기하학이 에너지가 되다</title>
+<meta name="description" content="정20면체 기반 수직축 풍력 터빈. CES 2026 혁신상 · iF Design Award 2026 Winner · 특허 PCT/KR2023/019844">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif:ital,wght@0,300;1,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050807;
+    --card: #0d1510;
+    --border: #162018;
+    --accent: #00e87a;
+    --accent2: #00b85e;
+    --accent-dim: rgba(0,232,122,0.08);
+    --text: #d4e8dc;
+    --muted: #5a7a65;
+    --white: #f0f7f3;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; max-width:100%; }
+
+  html {
+    scroll-behavior: smooth;
+    background: #050807;
+    overflow-x: hidden;
+  }
+
+  body {
+    background: #050807;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    word-break: keep-all;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events:none;
+    z-index:0;
+    opacity:0.5;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 60px;
+    height:60px;
+    background:rgba(5,8,7,0.85);
+    backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:28px;
+    color:var(--accent);
+    letter-spacing:0.06em;
+    text-decoration:none;
+  }
+
+  .nav-links {
+    display:flex;
+    align-items:center;
+    gap:0;
+  }
+
+  .nav-links a {
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    color:var(--muted);
+    text-decoration:none;
+    text-transform:uppercase;
+    padding:0 20px;
+    height:60px;
+    display:flex;
+    align-items:center;
+    border-left:1px solid var(--border);
+    transition:color 0.2s, background 0.2s;
+  }
+
+  .nav-links a:hover { color:var(--accent); background:var(--accent-dim); }
+  .nav-links a.active { color:var(--accent); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:100px 60px 80px;
+    position:relative;
+    overflow:hidden;
+    border-bottom:1px solid var(--border);
+  }
+
+  .hero-bg {
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(ellipse 70% 70% at 75% 50%, rgba(0,232,122,0.06) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 40% at 10% 80%, rgba(0,80,40,0.12) 0%, transparent 60%);
+    pointer-events:none;
+  }
+
+  /* 회전 이코사헤드론 */
+  .ico-bg {
+    position:absolute;
+    right:5%;
+    top:50%;
+    transform:translateY(-50%);
+    width:480px;
+    height:480px;
+    opacity:0.12;
+  }
+
+  .ico-bg svg { animation:spinSlow 40s linear infinite; width:100%; height:100%; }
+  @keyframes spinSlow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+  .hero-lang {
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.3em;
+    color:var(--accent);
+    text-transform:uppercase;
+    margin-bottom:24px;
+    opacity:0;
+    animation:fadeUp 0.8s 0.1s forwards;
+  }
+
+  .hero-title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(80px,12vw,160px);
+    line-height:0.88;
+    letter-spacing:0.02em;
+    color:var(--white);
+    margin-bottom:8px;
+    opacity:0;
+    animation:fadeUp 0.8s 0.3s forwards;
+  }
+
+  .hero-title .green { color:var(--accent); }
+
+  .hero-sub-en {
+    font-family:'Noto Serif',serif;
+    font-style:italic;
+    font-size:clamp(16px,2.5vw,26px);
+    color:var(--muted);
+    font-weight:300;
+    margin-bottom:4px;
+    opacity:0;
+    animation:fadeUp 0.8s 0.5s forwards;
+  }
+
+  .hero-sub-ko {
+    font-size:clamp(14px,1.8vw,18px);
+    color:var(--muted);
+    font-weight:300;
+    margin-bottom:48px;
+    opacity:0;
+    animation:fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-awards {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:56px;
+    opacity:0;
+    animation:fadeUp 0.8s 0.8s forwards;
+  }
+
+  .award-chip {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 16px;
+    border:1px solid var(--accent);
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.12em;
+    color:var(--accent);
+    text-transform:uppercase;
+    background:var(--accent-dim);
+  }
+
+  .award-chip.muted {
+    border-color:var(--border);
+    color:var(--muted);
+    background:transparent;
+  }
+
+  .hero-cta {
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    opacity:0;
+    animation:fadeUp 0.8s 1.0s forwards;
+  }
+
+  .btn-primary {
+    padding:14px 32px;
+    background:var(--accent);
+    color:#050807;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    text-decoration:none;
+    font-weight:600;
+    transition:background 0.2s, transform 0.2s;
+    display:inline-block;
+  }
+
+  .btn-primary:hover { background:var(--accent2); transform:translateY(-2px); }
+
+  .btn-outline {
+    padding:14px 32px;
+    border:1px solid var(--accent);
+    color:var(--accent);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    text-decoration:none;
+    transition:background 0.2s, transform 0.2s;
+    display:inline-block;
+  }
+
+  .btn-outline:hover { background:var(--accent-dim); transform:translateY(-2px); }
+
+  @keyframes fadeUp {
+    from{opacity:0;transform:translateY(24px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    border-bottom:1px solid var(--border);
+  }
+
+  .stat-cell {
+    padding:40px 48px;
+    border-right:1px solid var(--border);
+    transition:background 0.2s;
+  }
+
+  .stat-cell:last-child { border-right:none; }
+  .stat-cell:hover { background:var(--accent-dim); }
+
+  .stat-num {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:56px;
+    color:var(--accent);
+    line-height:1;
+    margin-bottom:6px;
+  }
+
+  .stat-label-en {
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:2px;
+  }
+
+  .stat-label-ko {
+    font-size:13px;
+    color:var(--muted);
+    font-weight:300;
+  }
+
+  /* ── SECTION ── */
+  section { border-bottom:1px solid var(--border); }
+
+  .section-inner { padding:100px 60px; }
+
+  .section-tag {
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.3em;
+    color:var(--accent);
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+
+  .section-title-en {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(40px,6vw,80px);
+    color:var(--white);
+    line-height:0.95;
+    letter-spacing:0.02em;
+  }
+
+  .section-title-ko {
+    font-size:clamp(18px,2.5vw,28px);
+    color:var(--muted);
+    font-weight:300;
+    margin-bottom:56px;
+    margin-top:6px;
+  }
+
+  /* ── PRODUCT GRID ── */
+  .product-grid {
+    display:grid;
+    grid-template-columns:1.5fr 1fr 1fr;
+    gap:2px;
+  }
+
+  .product-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:40px 36px;
+    position:relative;
+    overflow:hidden;
+    transition:border-color 0.3s;
+  }
+
+  .product-card:hover { border-color:var(--accent2); }
+
+  .product-card.featured { border-color:var(--accent); }
+
+  .product-card.featured::before {
+    content:'FLAGSHIP';
+    position:absolute;
+    top:20px; right:20px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;
+    letter-spacing:0.2em;
+    color:var(--bg);
+    background:var(--accent);
+    padding:3px 10px;
+  }
+
+  .product-model {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:64px;
+    color:var(--accent);
+    line-height:1;
+    margin-bottom:8px;
+  }
+
+  .product-size {
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:0.1em;
+    margin-bottom:20px;
+  }
+
+  .product-desc {
+    font-size:14px;
+    color:var(--muted);
+    font-weight:300;
+    line-height:1.9;
+    margin-bottom:24px;
+  }
+
+  .product-tag {
+    display:inline-block;
+    padding:4px 10px;
+    border:1px solid var(--border);
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;
+    letter-spacing:0.1em;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin:2px;
+  }
+
+  /* ── ABOUT GRID ── */
+  .about-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:80px;
+    align-items:start;
+  }
+
+  .about-body {
+    font-size:16px;
+    color:#a0c8b0;
+    font-weight:300;
+    line-height:2.1;
+  }
+
+  .about-body p + p { margin-top:20px; }
+  .about-body strong { color:var(--accent); font-weight:500; }
+
+  .about-body .en {
+    font-family:'Noto Serif',serif;
+    font-style:italic;
+    font-size:14px;
+    color:var(--muted);
+    display:block;
+    margin-top:4px;
+  }
+
+  /* ── AWARDS ── */
+  .awards-grid {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:2px;
+  }
+
+  .award-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:40px 32px;
+    transition:border-color 0.2s;
+  }
+
+  .award-card:hover { border-color:var(--accent); }
+
+  .award-icon { font-size:40px; margin-bottom:20px; display:block; }
+
+  .award-name {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:26px;
+    color:var(--accent);
+    margin-bottom:6px;
+    letter-spacing:0.04em;
+  }
+
+  .award-year {
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+    letter-spacing:0.2em;
+    margin-bottom:16px;
+    text-transform:uppercase;
+  }
+
+  .award-desc {
+    font-size:14px;
+    color:var(--muted);
+    font-weight:300;
+    line-height:1.9;
+  }
+
+  /* ── TECH HIGHLIGHT ── */
+  .tech-row {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:2px;
+    margin-bottom:2px;
+  }
+
+  .tech-cell {
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:32px 28px;
+    transition:background 0.2s;
+  }
+
+  .tech-cell:hover { background:var(--accent-dim); }
+
+  .tech-label {
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;
+    letter-spacing:0.25em;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+
+  .tech-value {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:36px;
+    color:var(--accent);
+    line-height:1;
+    margin-bottom:6px;
+  }
+
+  .tech-desc {
+    font-size:13px;
+    color:var(--muted);
+    font-weight:300;
+    line-height:1.7;
+  }
+
+  /* ── DOC LINK ── */
+  .doc-banner {
+    background:var(--card);
+    border:1px solid var(--accent);
+    padding:48px 60px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:40px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .doc-banner::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(135deg, rgba(0,232,122,0.05) 0%, transparent 60%);
+    pointer-events:none;
+  }
+
+  .doc-banner-text {}
+
+  .doc-banner-title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(28px,4vw,48px);
+    color:var(--white);
+    margin-bottom:8px;
+  }
+
+  .doc-banner-sub {
+    font-size:15px;
+    color:var(--muted);
+    font-weight:300;
+    line-height:1.7;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding:60px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:40px;
+    align-items:end;
+  }
+
+  .footer-brand {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:48px;
+    color:var(--accent);
+    letter-spacing:0.05em;
+    line-height:1;
+    margin-bottom:12px;
+  }
+
+  .footer-tagline {
+    font-family:'Noto Serif',serif;
+    font-style:italic;
+    font-size:15px;
+    color:var(--muted);
+    font-weight:300;
+    margin-bottom:20px;
+  }
+
+  .footer-links {
+    display:flex;
+    gap:0;
+    flex-wrap:wrap;
+  }
+
+  .footer-links a {
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    color:var(--muted);
+    text-decoration:none;
+    text-transform:uppercase;
+    padding:8px 16px;
+    border:1px solid var(--border);
+    margin:2px;
+    transition:color 0.2s, border-color 0.2s;
+  }
+
+  .footer-links a:hover { color:var(--accent); border-color:var(--accent); }
+
+  .footer-meta {
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--muted);
+    letter-spacing:0.1em;
+    text-align:right;
+    line-height:2;
+  }
+
+  .footer-meta a { color:var(--accent); text-decoration:none; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--accent2); border-radius:2px; }
+
+  /* ── MOBILE ── */
+  @media (max-width:600px) {
+    html, body { background:#050807 !important; color:var(--text) !important; overflow-x:hidden; }
+    nav { padding:0 20px; }
+    .nav-links { display:none; }
+    .hero { padding:80px 20px 60px; }
+    .hero-title { font-size:72px; }
+    .ico-bg { width:200px; height:200px; opacity:0.07; right:-20px; }
+    .stats-bar { grid-template-columns:1fr 1fr; }
+    .stat-cell { padding:28px 24px; border-bottom:1px solid var(--border); }
+    .section-inner { padding:64px 20px; }
+    .product-grid,
+    .about-grid,
+    .awards-grid,
+    .tech-row { grid-template-columns:1fr !important; }
+    .doc-banner { flex-direction:column; padding:32px 20px; }
+    footer { grid-template-columns:1fr; padding:40px 20px; }
+    .footer-meta { text-align:left; }
+    p, div, span, td { word-break:keep-all; overflow-wrap:break-word; }
+  }
+
+  @media (max-width:900px) and (min-width:601px) {
+    nav { padding:0 24px; }
+    .hero { padding:90px 32px 70px; }
+    .stats-bar { grid-template-columns:repeat(2,1fr); }
+    .section-inner { padding:80px 32px; }
+    .product-grid { grid-template-columns:1fr 1fr; }
+    .product-card:first-child { grid-column:span 2; }
+    .about-grid { grid-template-columns:1fr; gap:40px; }
+    .awards-grid { grid-template-columns:1fr 1fr; }
+    .tech-row { grid-template-columns:1fr 1fr; }
+    .doc-banner { flex-direction:column; padding:40px 32px; }
+    footer { padding:48px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">GeoWind</a>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#products">Products</a>
+    <a href="#technology">Technology</a>
+    <a href="#awards">Awards</a>
+    <a href="/tech-Kor" class="active">기술 문서</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+
+  <div class="ico-bg">
+    <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#00e87a" stroke-width="1">
+        <polygon points="200,25 350,112 350,288 200,375 50,288 50,112" fill="none"/>
+        <line x1="200" y1="25" x2="200" y2="375"/>
+        <line x1="350" y1="112" x2="50" y2="288"/>
+        <line x1="350" y1="288" x2="50" y2="112"/>
+        <line x1="200" y1="25" x2="350" y2="288"/>
+        <line x1="200" y1="25" x2="50" y2="288"/>
+        <line x1="200" y1="375" x2="350" y2="112"/>
+        <line x1="200" y1="375" x2="50" y2="112"/>
+        <line x1="50" y1="112" x2="350" y2="112"/>
+        <line x1="50" y1="288" x2="350" y2="288"/>
+        <line x1="200" y1="25" x2="50" y2="200"/>
+        <line x1="200" y1="25" x2="350" y2="200"/>
+        <line x1="50" y1="200" x2="350" y2="200"/>
+        <line x1="50" y1="200" x2="200" y2="375"/>
+        <line x1="350" y1="200" x2="200" y2="375"/>
+        <line x1="50" y1="112" x2="200" y2="200"/>
+        <line x1="350" y1="112" x2="200" y2="200"/>
+        <line x1="50" y1="288" x2="200" y2="200"/>
+        <line x1="350" y1="288" x2="200" y2="200"/>
+        <line x1="200" y1="25" x2="200" y2="200"/>
+        <line x1="200" y1="375" x2="200" y2="200"/>
+        <circle cx="200" cy="25" r="4" fill="#00e87a"/>
+        <circle cx="350" cy="112" r="4" fill="#00e87a"/>
+        <circle cx="350" cy="288" r="4" fill="#00e87a"/>
+        <circle cx="200" cy="375" r="4" fill="#00e87a"/>
+        <circle cx="50" cy="288" r="4" fill="#00e87a"/>
+        <circle cx="50" cy="112" r="4" fill="#00e87a"/>
+        <circle cx="200" cy="200" r="5" fill="#00e87a"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="hero-lang">GeoWind Inc. · Seoul, Korea · geowind.energy</div>
+  <h1 class="hero-title">GEO<br><span class="green">WIND</span></h1>
+  <p class="hero-sub-en">Where Geometry Becomes Energy</p>
+  <p class="hero-sub-ko">기하학이 에너지가 되는 곳</p>
+
+  <div class="hero-awards">
+    <div class="award-chip">◆ CES 2026 Innovation Award</div>
+    <div class="award-chip">◆ iF Design Award 2026 Winner</div>
+    <div class="award-chip muted">특허 PCT/KR2023/019844</div>
+    <div class="award-chip muted">arXiv:2603.00017</div>
+  </div>
+
+  <div class="hero-cta">
+    <a href="/tech-Kor" class="btn-primary">기술 문서 보기 →</a>
+    <a href="#about" class="btn-outline">회사 소개 ↓</a>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-cell">
+    <div class="stat-num">4</div>
+    <div class="stat-label-en">Cut-in Wind Speed</div>
+    <div class="stat-label-ko">m/s 컷인 풍속 · 5 m/s 정격</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">360°</div>
+    <div class="stat-label-en">Omnidirectional</div>
+    <div class="stat-label-ko">전방향 바람 포착</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">φ</div>
+    <div class="stat-label-en">Golden Ratio Design</div>
+    <div class="stat-label-ko">황금비 기반 날개 설계</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">10</div>
+    <div class="stat-label-en">Wing Faces · Math. Maximum</div>
+    <div class="stat-label-ko">수학적으로 증명된 최대 날개 수</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-inner">
+    <div class="section-tag">01 / About GeoWind</div>
+    <div class="section-title-en">REDEFINING<br>WIND ENERGY</div>
+    <div class="section-title-ko">풍력 에너지를 재정의하다</div>
+
+    <div class="about-grid">
+      <div class="about-body">
+        <p>
+          GeoWind는 <strong>정20면체(이코사헤드론)</strong>의 기하학적 구조에서 출발한
+          수직축 풍력 터빈(VAWT) 스타트업입니다. 수학의 황금비(φ)로 설계된 날개가
+          어떤 방향의 바람도 에너지로 전환합니다.
+          <span class="en">GeoWind is a VAWT startup where the geometry of a regular icosahedron meets renewable energy.</span>
+        </p>
+        <p>
+          도심 옥상, 해안, 오프그리드 지역 등 기존 터빈이 작동하기 어려운 환경에서도
+          <strong>초속 4m/s의 낮은 풍속</strong>부터 발전을 시작합니다.
+          각 터빈은 발전 장치이자 실시간 기후 데이터 허브입니다.
+          <span class="en">Starting generation at just 4 m/s, each turbine also serves as a real-time climate sensor node.</span>
+        </p>
+        <p>
+          GeoWind의 날개 설계는 <strong>arXiv 수학 논문</strong>으로 학문적으로 증명되었으며,
+          공학 논문이 MDPI Designs 저널에 심사 중입니다. CES 2026 혁신상과
+          iF Design Award 2026 수상으로 기술과 디자인 모두 국제적 검증을 받았습니다.
+          <span class="en">Mathematically proven in arXiv, validated by CES 2026 & iF Design Award.</span>
+        </p>
+      </div>
+
+      <div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <div style="background:var(--card); border:1px solid var(--border); padding:24px 28px;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:var(--accent); text-transform:uppercase; margin-bottom:8px;">Company</div>
+            <div style="font-size:15px; color:var(--text); font-weight:400;">GeoWind Inc.</div>
+            <div style="font-size:13px; color:var(--muted); margin-top:2px;">Seoul, Republic of Korea</div>
+          </div>
+          <div style="background:var(--card); border:1px solid var(--border); padding:24px 28px;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:var(--accent); text-transform:uppercase; margin-bottom:8px;">Founder & CEO</div>
+            <div style="font-size:15px; color:var(--text); font-weight:400;">전영준 · YoungJune Jeon</div>
+            <div style="font-size:13px; color:var(--muted); margin-top:2px;">info@geowind.kr</div>
+          </div>
+          <div style="background:var(--card); border:1px solid var(--border); padding:24px 28px;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:var(--accent); text-transform:uppercase; margin-bottom:8px;">Patent</div>
+            <div style="font-size:14px; color:var(--text); font-weight:400; font-family:'JetBrains Mono',monospace;">PCT/KR2023/019844</div>
+          </div>
+          <div style="background:var(--card); border:1px solid var(--border); padding:24px 28px;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.2em; color:var(--accent); text-transform:uppercase; margin-bottom:8px;">Academic</div>
+            <div style="font-size:13px; color:var(--text); font-weight:400; font-family:'JetBrains Mono',monospace;">arXiv:2603.00017v2 [math.GM]</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">DOI: 10.48550/arXiv.2603.00017</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="section-inner">
+    <div class="section-tag">02 / Product Lineup</div>
+    <div class="section-title-en">MODEL<br>LINEUP</div>
+    <div class="section-title-ko">제품 라인업 — 정20면체 한 변의 길이 기준</div>
+
+    <div class="product-grid">
+      <div class="product-card featured">
+        <div class="product-model">GW1200</div>
+        <div class="product-size">한 변 1,200mm · 높이 2.4m · Flagship</div>
+        <div class="product-desc">
+          CES 2026 혁신상 수상 모델. 도심·상업시설·스마트시티에 최적화된 플래그십 터빈.
+          AI 기후 데이터 허브 기능 내장.<br>
+          <em style="font-family:'Noto Serif',serif; font-size:13px; color:var(--muted);">Award-winning flagship for urban & commercial deployment.</em>
+        </div>
+        <div>
+          <span class="product-tag">Urban</span>
+          <span class="product-tag">Smart City</span>
+          <span class="product-tag">Climate Hub</span>
+          <span class="product-tag">CES 2026</span>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-model">GW600</div>
+        <div class="product-size">한 변 600mm · 높이 1.2m</div>
+        <div class="product-desc">소형 · 개인 · 오프그리드용. 배터리 결합으로 독립 전력 공급.<br>
+          <em style="font-family:'Noto Serif',serif; font-size:13px; color:var(--muted);">Compact off-grid & personal use.</em>
+        </div>
+        <div>
+          <span class="product-tag">Off-grid</span>
+          <span class="product-tag">Portable</span>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-model">GW1800</div>
+        <div class="product-size">한 변 1,800mm · 높이 3.6m</div>
+        <div class="product-desc">산업·항만·대규모 설치용. 높은 토크와 내환경성.<br>
+          <em style="font-family:'Noto Serif',serif; font-size:13px; color:var(--muted);">Industrial & coastal large-scale deployment.</em>
+        </div>
+        <div>
+          <span class="product-tag">Industrial</span>
+          <span class="product-tag">Coastal</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:2px; background:var(--card); border:1px solid var(--border); padding:20px 28px; display:flex; align-items:center; gap:16px;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:0.15em;">POC MODEL</div>
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:28px; color:#a0c8b0;">GW80</div>
+      <div style="font-size:13px; color:var(--muted); font-weight:300;">한 변 80mm · 높이 160mm · CFD 시뮬레이션 및 필드 테스트용 실증 모델</div>
+    </div>
+  </div>
+</section>
+
+<!-- TECHNOLOGY -->
+<section id="technology">
+  <div class="section-inner">
+    <div class="section-tag">03 / Core Technology</div>
+    <div class="section-title-en">GOLDEN<br>GEOMETRY</div>
+    <div class="section-title-ko">황금비 기하학 — 수학이 증명한 설계</div>
+
+    <div class="tech-row">
+      <div class="tech-cell">
+        <div class="tech-label">Structure · 구조</div>
+        <div class="tech-value">정20면체</div>
+        <div class="tech-desc">Icosahedron geodesic frame. 공기역학적 하중을 전체 구조에 균등 분산. 진동 최소화.<br><em style="font-family:'Noto Serif',serif;">Aerodynamic loads distributed across the entire geodesic frame.</em></div>
+      </div>
+      <div class="tech-cell">
+        <div class="tech-label">Wing Angle · 날개 각도</div>
+        <div class="tech-value">36°–108°</div>
+        <div class="tech-desc">황금 노몬(Golden Gnomon) — 36°–36°–108° 황금비 이등변삼각형. cos 36° = φ/2.<br><em style="font-family:'Noto Serif',serif;">Each wing face is a golden gnomon triangle proven mathematically.</em></div>
+      </div>
+      <div class="tech-cell">
+        <div class="tech-label">Rotor Radius · 회전 반지름</div>
+        <div class="tech-value">R = φ/2·ℓ</div>
+        <div class="tech-desc">10개 날개 중점이 정10각형을 형성. 수학적으로 완벽한 회전 균형.<br><em style="font-family:'Noto Serif',serif;">10 blade midpoints form a perfect decagon — R = (φ/2)ℓ.</em></div>
+      </div>
+    </div>
+    <div class="tech-row">
+      <div class="tech-cell">
+        <div class="tech-label">Solidity · 솔리디티</div>
+        <div class="tech-value">σ = 0.984</div>
+        <div class="tech-desc">고솔리디티 구성으로 저풍속 자기기동 유리. BEM 이론 분석 완료.<br><em style="font-family:'Noto Serif',serif;">High solidity for excellent self-starting at low wind speeds.</em></div>
+      </div>
+      <div class="tech-cell">
+        <div class="tech-label">Scale Invariance · 스케일 불변</div>
+        <div class="tech-value">GW80→1800</div>
+        <div class="tech-desc">σ=0.984, Δθ=36°는 모든 스케일에서 불변. 동일 수식이 어떤 크기에도 적용.<br><em style="font-family:'Noto Serif',serif;">Same equations apply from GW80 to GW1800 — scale-invariant design.</em></div>
+      </div>
+      <div class="tech-cell">
+        <div class="tech-label">Data Intelligence · 데이터</div>
+        <div class="tech-value">AI + IoT</div>
+        <div class="tech-desc">온도·습도·기압·풍속 4종 센서 + 온보드 AI. Grassroots Climate Grid 구성.<br><em style="font-family:'Noto Serif',serif;">4-sensor onboard AI forms a distributed Grassroots Climate Grid.</em></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AWARDS -->
+<section id="awards">
+  <div class="section-inner">
+    <div class="section-tag">04 / Recognition</div>
+    <div class="section-title-en">INTERNATIONAL<br>AWARDS</div>
+    <div class="section-title-ko">국제 수상 및 학문적 검증</div>
+
+    <div class="awards-grid">
+      <div class="award-card">
+        <span class="award-icon">🏆</span>
+        <div class="award-name">CES Innovation Award</div>
+        <div class="award-year">2026 · Sustainability & Energy Transition</div>
+        <div class="award-desc">세계 최대 IT·기술 전시회 CES 2026에서 지속가능성 및 에너지 전환 부문 혁신상 수상. Urban Wind Power 카테고리 수상.<br><em style="font-family:'Noto Serif',serif; display:block; margin-top:8px;">Innovation Award winner at CES 2026, Las Vegas.</em></div>
+      </div>
+
+      <div class="award-card">
+        <span class="award-icon">🏅</span>
+        <div class="award-name">iF Design Award</div>
+        <div class="award-year">2026 · Winner</div>
+        <div class="award-desc">세계적 권위의 iF Design Award에서 수상작(Winner) 선정. 기술 사양이 아닌 심미성과 혁신성에 대한 독립적 검증.<br><em style="font-family:'Noto Serif',serif; display:block; margin-top:8px;">Winner selected for aesthetic and innovative excellence.</em></div>
+      </div>
+
+      <div class="award-card">
+        <span class="award-icon">📐</span>
+        <div class="award-name">arXiv Mathematical Paper</div>
+        <div class="award-year">2026 · math.GM · v2 Published</div>
+        <div class="award-desc">정20면체 날개 배치에 대한 수학 논문 arXiv 등재(v2). DOI: 10.48550/arXiv.2603.00017. MDPI Designs 공학 논문 심사 중.<br><em style="font-family:'Noto Serif',serif; display:block; margin-top:8px;">Mathematically proven wing geometry, published on arXiv.</em></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DOC LINK BANNER -->
+<section>
+  <div class="section-inner" style="padding-top:0; padding-bottom:0;">
+    <div class="doc-banner">
+      <div class="doc-banner-text">
+        <div class="doc-banner-title">기술 설명서 · Technical Documentation</div>
+        <div class="doc-banner-sub">
+          GeoWind의 수학적 설계 원리, CFD 시뮬레이션 결과, POC 진행 현황,<br>
+          파라메트릭 설계표, 제조 공법까지 모두 담긴 기술 문서입니다.<br>
+          <em style="font-family:'Noto Serif',serif;">Full technical documentation including math proofs, CFD results & parametric design tables.</em>
+        </div>
+      </div>
+      <a href="/tech-Kor" class="btn-primary" style="flex-shrink:0; white-space:nowrap;">기술 문서 보기 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">GeoWind</div>
+    <div class="footer-tagline">Where Geometry Becomes Energy · 기하학이 에너지가 되는 곳</div>
+    <div class="footer-links">
+      <a href="/tech-Kor">기술 문서</a>
+      <a href="https://arxiv.org/abs/2603.00017" target="_blank">arXiv Paper</a>
+      <a href="mailto:info@geowind.kr">Contact</a>
+      <a href="https://geowind.us" target="_blank">geowind.us</a>
+    </div>
+  </div>
+  <div class="footer-meta">
+    GeoWind Inc. · Seoul, Korea<br>
+    CEO 전영준 · YoungJune Jeon<br>
+    <a href="mailto:info@geowind.kr">info@geowind.kr</a><br>
+    특허 PCT/KR2023/019844
+  </div>
+</footer>
+
+</body>
+</html>
